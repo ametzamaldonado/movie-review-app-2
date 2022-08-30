@@ -6,14 +6,14 @@ const cors = require("cors");
 const app = express();
 
 // CONTROLLER
-// const reviewController = require("./controllers/reviewController")
+const reviewController = require("./controllers/reviewController")
 
 // MIDDLEWARE
 app.use(cors());
 app.use(express.json());
 
 // ROUTES
-// app.use("/reviews", reviewController);
+app.use("/reviews", reviewController);
 
 app.get("/", (req, res) => {
     res.send("Hello")
