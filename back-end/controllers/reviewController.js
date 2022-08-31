@@ -1,49 +1,61 @@
 const express = require("express");
 const reviews = express.Router();
 
-const reviewsData = require("../reviews");
+const { 
+    getAllReviews, 
+    getReview, 
+    createReview, 
+    deleteReview, 
+    updateReview
+} = require("../queries/reviews")
 
-reviews.get("/", (req, res) => {
-    res.json(reviewsData)
+reviews.get("/", async (req, res) => {
+    const allReviews = await getAllReviews();
+    if(allReviews[0]){
+        res.status(200).json(allReviews);
+    } else {
+        res.status(500).json({ error: "server error!" })
+    }
 });
 
-// SHOW ROUTE
-reviews.get("/:arrayIndex" , (req, res) => {
-    const { arrayIndex } = req.params;
-    if(reviewsData[arrayIndex]){
-        res.json(reviewsData[arrayIndex])
+reviews.get("/:id" , async (req, res) => {
+    const { id } = req.params;
+    const review = await getReview(id)
+    if(review.id){
+        res.status(200).json(review)
     } else {
-        // because the API has no data, the network status is '304' but the below code fixes it and returns a '404' message. We don't want a '304' error.
-        res.status(404).send('no bookmark found - sorry')
+        res.status(404).send({ error: "song not found" })
     }
 })
 
-// CREATE Route
-reviews.post("/", (req, res) => {
-    reviewsData.push(req.body);
-    res.json(reviewsData[reviewsData.length - 1])
+reviews.post("/", async (req, res) => {
+    try {
+        const review = await createReview(req.body);
+        res.json(review)
+    } catch (err) {
+        return err;
+    }
 })
 
-// DELETE Route
-// reviews.delete("/:arrayIndex" , (req, res) => {
-//     const { arrayIndex } = req.params;
-//     if(reviewsData[arrayIndex]){
-//         const deletedBookmark = reviewsData.splice(arrayIndex, 1)
-//         res.status(200).json(deletedBookmark)
-//     } else {
-//         // because the API has no data, the network status is '304' but the below code fixes it and returns a '404' message. We don't want a '304' error.
-//         res.status(404).send('no bookmark found - sorry')
-//     }
-// });
+reviews.delete("/:id" , async (req, res) => {
+    const { id } = req.params;
+    const deletedBookmark = await deleteReview(id);
+    if(deletedBookmark.id){
+        res.status(200).json(deletedBookmark)
+    } else {
+        // because the API has no data, the network status is '304' but the below code fixes it and returns a '404' message. We don't want a '304' error.
+        res.status(404).send({ error: "song not deleted" });
+    }
+});
 
-// UPDATE Route
-// reviews.put("/:arrayIndex" , (req, res) => {
-//     const { arrayIndex } = req.params;
-//     reviewsData[arrayIndex] = req.body;
-//     res.status(200).json(reviewsData[arrayIndex])
-// })
-
-
-
+reviews.put("/:id" , async (req, res) => {
+    const { id } = req.params;
+    const updatedReview = await updatedReview(req.body, id);
+    if(updateReview.id){
+        res.status(200).json(updatedReview)
+    } else {
+        res.status(404).json({ error: "song not updated" });
+    } 
+})
 
 module.exports = reviews;
